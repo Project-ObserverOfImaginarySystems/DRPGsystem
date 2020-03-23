@@ -1523,7 +1523,7 @@ namespace DRPGsystem
             }
             if (y == 0)
             {
-                y = 5 + (55 * GetId());
+                y = 0;
                 Console.WriteLine("y : " + y);
             }
             if (width == 0)
@@ -1996,7 +1996,6 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                Console.WriteLine("reFont : height - " + reRect.Height);
                 this.reFont = new Font("MS UI Gothic", (reRect.Height * 2) / 3);
             }
             else

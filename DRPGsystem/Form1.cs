@@ -300,7 +300,7 @@ namespace DRPGsystem
                 //Ibox buf = GetStackBoxContext();
                 //Console.WriteLine(buf.GetContentAll(""));
                 SolidBrush br = new SolidBrush(Color.FromArgb(0, 0, 0));
-                SolidBrush menubr = new SolidBrush(Color.FromArgb(50, 50, 50));
+                SolidBrush menubr = new SolidBrush(Color.FromArgb(150, 150, 150));
                 int addx = 0;
                 int addy = 0;
                 for (int n = 0;n < GetStackLength() + 1;++n)
@@ -308,12 +308,27 @@ namespace DRPGsystem
                     Ibox buf = GetStackBoxContext(n);
                     for (int i = 0; i < buf.GetNumber(); ++i)
                     {
+                        int margin = 10;
+
+                        buf.GetContext(i).SetRect(new Rectangle(margin, margin + (30 * i) + (margin * i), 160, 30));
+                        
 
                         buf.GetContext(i).SetReRect();
 
+                    }
 
-                        e.Graphics.FillRectangle(menubr, new Rectangle(buf.GetReRect().X + addx, buf.GetReRect().Y + addy, buf.GetReRect().Width, buf.GetReRect().Height * (buf.GetNumber() + 0)) /* サイズの取得 */);
 
+
+                    int remarginX = (int)(buf.GetContext(0).GetReRect().X);
+                    int remarginY = (int)(buf.GetContext(0).GetReRect().Y);
+
+                    Console.WriteLine("menu : " + buf.GetContext(buf.GetNumber() - 1).GetReRect().Height + "  :     " + (buf.GetContext(buf.GetNumber() - 1).GetReRect().Y + 20));
+                    e.Graphics.FillRectangle(menubr, new Rectangle(0 + addx, 0 + addy, buf.GetContext(0).GetReRect().Width + (remarginX * 2), buf.GetContext(buf.GetNumber() - 1).GetReRect().Height + buf.GetContext(buf.GetNumber() - 1).GetReRect().Y + remarginY) /* サイズの取得 */);
+
+
+
+                    for (int i = 0; i < buf.GetNumber(); ++i)
+                    {
                         e.Graphics.FillRectangle(br, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
 
                         if (buf.GetContext(i).GetState() == 2)
@@ -326,14 +341,12 @@ namespace DRPGsystem
                         }
                         Console.WriteLine("x : " + buf.GetContext(i).GetReX() + "y : " + buf.GetContext(i).GetReY());
 
-                    }
 
+
+                    }
                     addx += 30;
 
                     addy += 10;
-
-
-                    
 
                 }
             }
