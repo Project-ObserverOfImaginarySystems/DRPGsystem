@@ -652,7 +652,10 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.font = new Font("MS UI Gothic", (rect.Height * 2) / 3);
+                if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0)
+                {
+                    this.font = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {
@@ -669,7 +672,10 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.reFont = new Font("MS UI Gothic", (reRect.Height * 2) / 3);
+                if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0)
+                {
+                    this.reFont = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {
@@ -1314,7 +1320,10 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.font = new Font("MS UI Gothic", (rect.Height * 2) / 3);
+                if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0)
+                {
+                    this.font = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {
@@ -1331,7 +1340,10 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.reFont = new Font("MS UI Gothic", (reRect.Height * 2) / 3);
+                    if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0)
+                    {
+                    this.reFont = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {
@@ -1979,7 +1991,10 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.font = new Font("MS UI Gothic", (rect.Height * 2) / 3);
+                if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0)
+                {
+                    this.font = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {
@@ -1996,7 +2011,9 @@ namespace DRPGsystem
         {
             if (font == null)
             {
-                this.reFont = new Font("MS UI Gothic", (reRect.Height * 2) / 3);
+                if (reRect.Height != 0 && ((reRect.Height * 2) / 3) != 0) {
+                    this.reFont = new Font("MS UI Gothic", (int)((reRect.Height * (double)2) / 3));
+                }
             }
             else
             {

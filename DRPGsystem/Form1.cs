@@ -179,9 +179,17 @@ namespace DRPGsystem
                 Ibox item = new MenuBox(0, 0, "item.", "アイテム", null, null);
                     Ibox recivery = new MenuBox(0, 0, "reciavery", "回復薬", null, null);
                         recivery.AddBox(new Box(0, 0, "grade1", "キズぐすり"));
+                            recivery.GetContext(0).AddBox(new Box(0, 0, "grade1manual", "キズぐすり\nHPを20かいふくする"));
+
                         recivery.AddBox(new Box(1, 0, "grade2", "すごいキズぐすり"));
-                        recivery.AddBox(new Box(2, 0, "grade3", "かんぜんかいふくスプレー"));
-                        recivery.AddBox(new Box(3, 0, "grade4", "かいふくスプレー"));
+                            recivery.GetContext(1).AddBox(new Box(0, 0, "grade1manual", "すごいキズぐすり\nHPを50かいふくする"));
+
+                        recivery.AddBox(new Box(2, 0, "grade3", "かいふくスプレー"));
+                            recivery.GetContext(2).AddBox(new Box(0, 0, "grade1manual", "かいふくスプレー\nHPやじょうたい　いじょうもすべてかいふくする"));
+
+                        recivery.AddBox(new Box(3, 0, "grade4", "まんたんスプレー"));
+                            recivery.GetContext(3).AddBox(new Box(0, 0, "grade1manual", "まんたんスプレー\nHPを20かいふくする"));
+
                     Ibox trickDisck  = new MenuBox(1, 0, "trickDisck", "わざマシン", null, null);
                         trickDisck.AddBox(new Box(0, 0, "iwa", "いわくだき"));
                         trickDisck.AddBox(new Box(1, 0, "lock", "ロッククライミング"));
@@ -293,8 +301,35 @@ namespace DRPGsystem
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
 
+            Bitmap canvas = new Bitmap(500, 500);
+            //ImageオブジェクトのGraphicsオブジェクトを作成する
+            Graphics sg = Graphics.FromImage(canvas);
+
+
+
+            BufferedGraphicsContext currentContext;
+            BufferedGraphics bg;
+
+            currentContext = BufferedGraphicsManager.Current;
+            if (this.Width > 50 && this.Height > 39)
+            {
+                bg = currentContext.Allocate(this.CreateGraphics(), this.DisplayRectangle);//このコントロールのグラフィックスを作成し、このウィンドウのサイズを与える。
+                                                                                           //return BufferGraphics
+            }
+            else
+            {
+                bg = currentContext.Allocate(this.CreateGraphics(), new Rectangle(0, 0, 5, 5));//このコントロールのグラフィックスを作成し、このウィンドウのサイズを与える。
+            }
+
+
             Console.WriteLine("描画します");
-            e.Graphics.Clear(Color.FromArgb(255, 255, 255, 255));
+
+            // g.Clear(Color.FromArgb(250, 250, 250));
+
+
+
+            Console.WriteLine("描画します");
+            bg.Graphics.Clear(Color.FromArgb(255, 255, 255, 255));
             if (box != null)
             {
                 //Ibox buf = GetStackBoxContext();
@@ -306,38 +341,164 @@ namespace DRPGsystem
                 for (int n = 0;n < GetStackLength() + 1;++n)
                 {
                     Ibox buf = GetStackBoxContext(n);
+                    string[] output = new String[buf.GetNumber()];
                     for (int i = 0; i < buf.GetNumber(); ++i)
                     {
                         int margin = 10;
+                        int height = 20;
+                        
+                        output[i] = buf.GetContext(i).GetContent();
 
-                        buf.GetContext(i).SetRect(new Rectangle(margin, margin + (30 * i) + (margin * i), 160, 30));
+                        string mae = "";
+                        string ushiro = "";
+                        int length = buf.GetContext(i).GetContent().Length;
+                        int l = 0;
+                        int kaigyo = 8;
+                        Size nopadSize;
+
+
+                        // width  <  char_width[]   -->   \n
+                        //sumWidth < buf.GetContext(i).GetReRect().Width
+                        int sumWidth = 0;
+                        int row = 1;
+
+                        int escapeId = -1;
+                        bool escapeFlag = false;
+
+
+                        for (int counter = 0;counter < output[i].Length;++counter)
+                        {
+
+                            if ("\n" == output[i].Substring(counter, 1) && escapeFlag == false)//改行が意図的に入っていればリセット
+                            {
+                                sumWidth = 0;
+                                escapeId = -1;
+                                ++row;
+                            }
+                            else {
+
+                            nopadSize = TextRenderer.MeasureText(sg, output[i].Substring(counter, 1), buf.GetContext(i).GetReFont(), new Size(500, 500), TextFormatFlags.NoPadding);
+
+                            sumWidth += nopadSize.Width;//横幅を足していく
+
+                                // A 20   B 20   C 20   D 20   E 20    <60>    A, B, C  <60>  ///  D -> <80>
+
+                                /*
+                                 * 
+                                 * Paddingありで
+                                 * [ ABCDEF ] [ GHIJKLM ] [ ASDSAD ]
+                                 * みたいな感じに文字列を読み取ってやってみればより高精度になりそう
+                                 * 
+                                 */
+
+                                if (sumWidth > buf.GetContext(i).GetReRect().Width)
+                                {
+                                    if (escapeFlag == false)
+                                    {
+                                        escapeId = counter;
+                                        escapeFlag = true;
+
+                                        --counter;
+
+                                        string s1s = output[i].Substring(0, counter);
+
+                                        string s2s = output[i].Substring(counter, output[i].Length - counter);
+                                        output[i] = s1s + "\n" + s2s;
+                                        ++counter;
+                                        ++row;//列を増やす
+                                        sumWidth = 0;
+                                    }
+                                    else
+                                    {
+                                        if (escapeId == counter)//無限ループ発生
+                                        {
+
+                                            escapeId = -1;
+                                            escapeFlag = false;
+
+
+                                            string es1 = output[i].Substring(0, counter);
+
+                                            string es2 = output[i].Substring(counter, output[i].Length - counter);
+
+                                            Console.WriteLine(es1);
+                                            Console.WriteLine(es2);
+                                            output[i] = es1 + "\n" + es2;
+                                            ++counter;
+
+                                            sumWidth = 0;
+                                        }
+                                        else
+                                        {
+                                            escapeId = -1;
+                                            escapeFlag = false;
+
+                                            --counter;
+
+                                            string ls1 = output[i].Substring(0, counter);
+
+                                            string ls2 = output[i].Substring(counter, output[i].Length - counter);
+                                            output[i] = ls1 + "\n" + ls2;
+                                            ++counter;
+                                            ++row;//列を増やす
+                                            sumWidth = 0;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+
+                        if (i == 0) {
+                            buf.GetContext(i).SetRect(new Rectangle(margin, margin + (height * i) + (margin * i), 160, height * (row)));
+                        }
+                        else
+                        {
+                            buf.GetContext(i).SetRect(new Rectangle(margin, margin + buf.GetContext(i - 1).GetRect().Y + buf.GetContext(i - 1).GetRect().Height, 160, height * (row)));
+                        }
                         
 
+
                         buf.GetContext(i).SetReRect();
+                        Config cfg = new Config();
+                        if (height != 0 && cfg.GetHeight() != 0 && (int)(height * (cfg.GetHeight() / (double)cfg.GetDefaultHeight()) * 2) / 3 != 0) {
+                            buf.GetContext(i).SetReFont(new Font("MS UI Gothic", (int)(height * (cfg.GetHeight() / (double)cfg.GetDefaultHeight()) * 2) / 3));
+                        }
+
 
                     }
 
 
 
-                    int remarginX = (int)(buf.GetContext(0).GetReRect().X);
-                    int remarginY = (int)(buf.GetContext(0).GetReRect().Y);
+                    int reMarginX = (int)(buf.GetContext(0).GetReRect().X);
+                    int reMarginY = (int)(buf.GetContext(0).GetReRect().Y);
+                    int reHeight = 0;
+                    for(int a = 0; a < buf.GetNumber(); ++a)
+                    {
+                        reHeight += buf.GetContext(a).GetReRect().Height;
+                    }
 
                     Console.WriteLine("menu : " + buf.GetContext(buf.GetNumber() - 1).GetReRect().Height + "  :     " + (buf.GetContext(buf.GetNumber() - 1).GetReRect().Y + 20));
-                    e.Graphics.FillRectangle(menubr, new Rectangle(0 + addx, 0 + addy, buf.GetContext(0).GetReRect().Width + (remarginX * 2), buf.GetContext(buf.GetNumber() - 1).GetReRect().Height + buf.GetContext(buf.GetNumber() - 1).GetReRect().Y + remarginY) /* サイズの取得 */);
+                    bg.Graphics.FillRectangle(menubr, new Rectangle(0 + addx, 0 + addy, buf.GetContext(0).GetReRect().Width + (reMarginX * 2), reHeight + (reMarginY * (2 + (buf.GetNumber() - 1)))) /* サイズの取得 */);
 
 
 
                     for (int i = 0; i < buf.GetNumber(); ++i)
                     {
-                        e.Graphics.FillRectangle(br, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
+                        bg.Graphics.FillRectangle(br, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
 
                         if (buf.GetContext(i).GetState() == 2)
                         {
-                            e.Graphics.DrawString("▶" + buf.GetContext(i).GetContent()/* コンテンツ */, buf.GetContext(i).GetReFont()/* フォント */, Brushes.White /* ブラシ */, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
+                            bg.Graphics.DrawString("" + output[i]/* コンテンツ */, buf.GetContext(i).GetReFont()/* フォント */, Brushes.White /* ブラシ */, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
                         }
+                        /*
+                         * ">"
+                         * " "
+                         */
                         else
                         {
-                            e.Graphics.DrawString("▷" + buf.GetContext(i).GetContent()/* コンテンツ */, buf.GetContext(i).GetReFont()/* フォント */, Brushes.White /* ブラシ */, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
+                            bg.Graphics.DrawString("" + output[i]/* コンテンツ */, buf.GetContext(i).GetReFont()/* フォント */, Brushes.White /* ブラシ */, new Rectangle(buf.GetContext(i).GetReRect().X + addx, buf.GetContext(i).GetReRect().Y + addy, buf.GetContext(i).GetReRect().Width, buf.GetContext(i).GetReRect().Height) /* サイズの取得 */);
                         }
                         Console.WriteLine("x : " + buf.GetContext(i).GetReX() + "y : " + buf.GetContext(i).GetReY());
 
@@ -349,6 +510,53 @@ namespace DRPGsystem
                     addy += 10;
 
                 }
+
+                /*
+                //mr.Graphics.FillRectangle(br, new Rectangle(0, 0, 1000, 1000));
+                //mr.Graphics.DrawString(output, new Font("MS UI Gothic", 10), wh, new Rectangle(0, 0, 800, 800));
+                */
+                bg.Render();
+                // Renders the contents of the buffer to the specified drawing surface.
+                bg.Render(this.CreateGraphics());
+                /*
+                string s = "DOBON.NET";
+
+                //描画先とするImageオブジェクトを作成する
+                Bitmap canvas = new Bitmap(this.Width, this.Height);
+                //ImageオブジェクトのGraphicsオブジェクトを作成する
+                Graphics g = Graphics.FromImage(canvas);
+
+                //フォントオブジェクトの作成
+                Font fnt = new Font("Arial", 25);
+
+                //文字列を描画する
+                TextRenderer.DrawText(g, s, fnt, new Point(0, 0), Color.Black);
+                //グラフィック - 文字列 - font - 表示場所 - 文字の色
+
+
+                //文字列を描画するときの大きさを計測する
+                Size strSize = TextRenderer.MeasureText(g, s, fnt);
+                //       サイズ     <-    グラフィック - 文字列 - Font
+
+                
+
+                //取得した文字列の大きさを使って四角を描画する
+                g.DrawRectangle(Pens.Red, 0, 0, strSize.Width, strSize.Height);
+
+                //NoPaddingにして、文字列を描画する
+                TextRenderer.DrawText(g, s, fnt, new Point(0, 50), Color.Black, TextFormatFlags.NoPadding);
+                    //グラフィック - 文字列 - Font - 表示場所 - 表示する文字の色 - 余白無し
+
+                //大きさを計測して、四角を描画する
+                Size nopadSize = TextRenderer.MeasureText(g, s, fnt, new Size(500, 500), TextFormatFlags.NoPadding);
+
+
+                g.DrawRectangle(Pens.Blue, 0, 50, nopadSize.Width, nopadSize.Height);
+
+                e.Graphics.DrawImage(canvas, new PointF(0, 0));
+                */
+
+
             }
         }
 
@@ -402,7 +610,7 @@ namespace DRPGsystem
                     break;
                 //Tabキーが押されてもフォーカスが移動しないようにする
                 case Keys.Enter:
-                    if(GetStackBoxContext().GetContext(GetStackCorsor()).GetNumber() > 1)
+                    if(GetStackBoxContext().GetContext(GetStackCorsor()).GetNumber() > 0)
                     {
                         Console.WriteLine(GetStackCorsor());
 
